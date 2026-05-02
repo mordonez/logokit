@@ -1,10 +1,12 @@
 export const layoutNames = ["horizontal", "vertical", "stacked"] as const
 export const variantNames = ["color", "mono-black", "mono-white"] as const
 export const formatNames = ["svg", "png"] as const
+export const bundledFontNames = ["Inter", "Plus Jakarta Sans", "DM Sans", "Outfit", "Geist"] as const
 
 export type LayoutName = (typeof layoutNames)[number]
 export type VariantName = (typeof variantNames)[number]
 export type OutputFormat = (typeof formatNames)[number]
+export type BundledFontName = (typeof bundledFontNames)[number]
 
 export interface GenerateInput {
   text: string
@@ -17,6 +19,8 @@ export interface GenerateInput {
   background?: string
   padding?: number
   filenameBase?: string
+  primaryFont?: string
+  secondaryFont?: string
 }
 
 export interface GenerateResult {

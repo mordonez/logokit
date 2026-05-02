@@ -8,8 +8,7 @@ import process from "node:process"
 import { Command } from "commander"
 
 import { generate, listLayouts, type LayoutDescriptor } from "@mordonezdev/logokit-core"
-
-const cliVersion = "1.0.0"
+import { version as cliVersion } from "../package.json"
 
 interface GenerateOptions {
   logo?: string
@@ -24,6 +23,8 @@ interface GenerateOptions {
   config?: string
   json?: boolean
   quiet?: boolean
+  font?: string
+  secondaryFont?: string
 }
 
 async function readLogo(logoPath?: string) {
@@ -81,6 +82,8 @@ async function runGenerate(options: GenerateOptions) {
     variant: merged.variant,
     background: merged.background,
     format: merged.format,
+    primaryFont: merged.font,
+    secondaryFont: merged.secondaryFont,
     ...logoInput,
   })
 
@@ -106,7 +109,7 @@ async function runGenerate(options: GenerateOptions) {
   }
 }
 
-async function runBatch(inputPath: string, options: GenerateOptions & { concurrency?: string; manifest?: boolean }) {
+async function runBatch(inputPath: string, options: GenerateOptions & { manifest?: boolean }) {
   const input = await readFile(inputPath, "utf8")
   const items = inputPath.endsWith(".json") ? JSON.parse(input) : parseSimpleCsv(input)
   const outDir = options.outDir
@@ -140,6 +143,8 @@ program
   .option("-l, --logo <path>", "Path to an SVG or PNG logo")
   .option("-t, --text <text>", "Primary text")
   .option("-s, --secondary <text>", "Secondary text")
+  .option("--font <family>", "Primary font family (bundled: Inter, DM Sans, Outfit, Geist, Plus Jakarta Sans; or any Google Fonts name)")
+  .option("--secondary-font <family>", "Secondary font family (same options as --font)")
   .option("-L, --layout <name>", "horizontal | vertical | stacked", "horizontal")
   .option("-v, --variant <name>", "color | mono-black | mono-white", "color")
   .option("-b, --background <color>", "transparent or #RRGGBB", "transparent")

@@ -12,7 +12,7 @@ test("generates a preview and downloads svg", async ({ page }) => {
 
   await page.getByLabel("Primary text").fill("Northwind")
   await page.getByLabel("Secondary text").fill("Platform")
-  await page.getByRole("radio", { name: /Vertical/i }).check()
+  await page.getByRole("radio", { name: /Vertical/i }).check({ force: true })
 
   await page.getByRole("button", { name: /download svg/i }).click({ force: true })
   await expect(page.getByText("SVG ready.")).toBeVisible({ timeout: 15000 })

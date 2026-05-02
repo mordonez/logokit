@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto"
 
 import { createLayoutFrame, createTextFrame, listLayouts as listLayoutsInternal } from "./layouts"
-import { loadFontKit, normalizeLogo } from "./assets"
+import { loadFontKit, normalizeLogo, resolveFontKit } from "./assets"
 import { generateOptionsSchema } from "./schemas"
 import type { GenerateInput, GenerateResult, LayoutDescriptor, VariantName } from "./types"
 
@@ -34,6 +34,14 @@ function slugify(value: string) {
     .slice(0, 80) || "lockup"
 }
 
+function escapeAttr(value: string) {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+}
+
 function monoFilterMarkup(color: string) {
   return `<filter id="mono-logo" color-interpolation-filters="sRGB"><feFlood flood-color="${color}" result="paint"/><feComposite in="paint" in2="SourceAlpha" operator="in"/></filter>`
 }
@@ -61,6 +69,8 @@ export async function renderSvg(input: GenerateInput) {
     background: input.background,
     padding: input.padding,
     filenameBase: input.filenameBase,
+    primaryFont: input.primaryFont,
+    secondaryFont: input.secondaryFont,
   })
 
   const [fonts, logo] = await Promise.all([
@@ -68,7 +78,10 @@ export async function renderSvg(input: GenerateInput) {
     normalizeLogo(input.logo, input.logoMimeType),
   ])
 
-  const textFrame = createTextFrame(options.layout, options.text, options.secondaryText, fonts)
+  const primaryFontKit = options.primaryFont ? await resolveFontKit(options.primaryFont) : fonts
+  const secondaryFontKit = options.secondaryFont ? await resolveFontKit(options.secondaryFont) : fonts
+
+  const textFrame = createTextFrame(options.layout, options.text, options.secondaryText, primaryFontKit, secondaryFontKit)
   const frame = createLayoutFrame(options.layout, logo.width, logo.height, textFrame, options.padding)
   const textColor = options.variant === "mono-white" ? "#FFFFFF" : "#111827"
   const background = options.background
@@ -78,13 +91,14 @@ export async function renderSvg(input: GenerateInput) {
     : `<rect width="100%" height="100%" fill="${background}"/>`
 
   const paths = frame.lines.map((line) => {
-    const font = line.weight === "bold" ? fonts.bold : fonts.regular
+    const fontKit = line.fieldType === "secondary" ? secondaryFontKit : primaryFontKit
+    const font = line.weight === "bold" ? fontKit.bold : fontKit.regular
     const pathData = buildGlyphPathData(font, line.text, line.x, line.baselineY, line.fontSize)
     return `<path d="${pathData}" fill="${textColor}"/>`
   }).join("")
 
   const svg = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${frame.width}" height="${frame.height}" viewBox="0 0 ${frame.width} ${frame.height}" fill="none" role="img" aria-label="${options.text}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${frame.width}" height="${frame.height}" viewBox="0 0 ${frame.width} ${frame.height}" fill="none" role="img" aria-label="${escapeAttr(options.text)}">`,
     defs,
     backgroundRect,
     logoMarkup(logo, options.variant, frame),

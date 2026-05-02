@@ -7,6 +7,7 @@ import { imageSize } from "image-size"
 
 import { MAX_RASTER_BYTES, MAX_SVG_BYTES } from "./schemas"
 import { sanitizeSvg } from "./sanitize"
+import { bundledFontNames, type BundledFontName } from "./types"
 
 export interface FontKit {
   regular: import("opentype.js").Font
@@ -64,7 +65,10 @@ export function resolveAssetPath(...segments: string[]) {
 
 export async function loadDefaultLogo() {
   if (!defaultLogoPromise) {
-    defaultLogoPromise = readFile(resolveAssetPath("default-logo.svg"), "utf8")
+    defaultLogoPromise = readFile(resolveAssetPath("default-logo.svg"), "utf8").catch((err) => {
+      defaultLogoPromise = undefined
+      throw err
+    })
   }
 
   return defaultLogoPromise
@@ -101,6 +105,120 @@ export async function loadFontKit() {
     regular: opentype.parse(toArrayBuffer(regular)),
     bold: opentype.parse(toArrayBuffer(bold)),
   }
+}
+
+// ─── Font family resolution ──────────────────────────────────────────────────
+
+const bundledFontFileMap: Record<BundledFontName, { regular: string; bold: string }> = {
+  "Inter":              { regular: "Inter-Regular.woff",             bold: "Inter-Bold.woff" },
+  "Plus Jakarta Sans":  { regular: "PlusJakartaSans-Regular.woff",   bold: "PlusJakartaSans-Bold.woff" },
+  "DM Sans":            { regular: "DMSans-Regular.woff",            bold: "DMSans-Bold.woff" },
+  "Outfit":             { regular: "Outfit-Regular.woff",            bold: "Outfit-Bold.woff" },
+  "Geist":              { regular: "Geist-Regular.woff",             bold: "Geist-Bold.woff" },
+}
+
+// In-memory cache: font family name → parsed opentype Font pair
+const fontKitCache = new Map<string, FontKit>()
+
+function isBundledFont(name: string): name is BundledFontName {
+  return (bundledFontNames as readonly string[]).includes(name)
+}
+
+async function parseFont(buffer: Buffer): Promise<import("opentype.js").Font> {
+  const opentypeModule = await import("opentype.js") as {
+    parse?: (buffer: ArrayBuffer) => import("opentype.js").Font
+    default?: { parse: (buffer: ArrayBuffer) => import("opentype.js").Font }
+  }
+  const opentype = opentypeModule.parse ? opentypeModule : opentypeModule.default
+  if (!opentype?.parse) throw new Error("Unable to load opentype.js parser.")
+  return opentype.parse(toArrayBuffer(buffer))
+}
+
+async function loadBundledFontKit(name: BundledFontName): Promise<FontKit> {
+  const files = bundledFontFileMap[name]
+  const [regular, bold] = await Promise.all([
+    readFile(resolveAssetPath("fonts", files.regular)),
+    readFile(resolveAssetPath("fonts", files.bold)),
+  ])
+  return {
+    regular: await parseFont(regular),
+    bold: await parseFont(bold),
+  }
+}
+
+/**
+ * Fetch a single font weight from the Google Fonts CSS1 API.
+ * Uses a pre-woff2 User-Agent so Google Fonts responds with woff, which
+ * opentype.js can parse natively (woff2 is NOT supported by opentype.js).
+ */
+async function fetchGoogleFont(family: string, weight: 400 | 700): Promise<Buffer | null> {
+  try {
+    const encoded = encodeURIComponent(family)
+    // CSS v1 API + old Firefox UA → Google Fonts returns woff (not woff2)
+    const cssUrl = `https://fonts.googleapis.com/css?family=${encoded}:${weight}`
+    const cssRes = await fetch(cssUrl, {
+      headers: {
+        // Firefox 27 (Jan 2014) supported woff but predates woff2 (mid-2014)
+        "User-Agent": "Mozilla/5.0 (Windows NT 6.1; rv:27.0) Gecko/20100101 Firefox/27.0",
+      },
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!cssRes.ok) return null
+    const css = await cssRes.text()
+    // Match url(...) followed by format('woff') — Google Fonts serves woff
+    // from query-string URLs that don't end in .woff
+    const match = css.match(/url\(([^)]+)\)\s*format\(['"]woff['"]\)/)
+    if (!match) return null
+    const fontRes = await fetch(match[1], { signal: AbortSignal.timeout(15000) })
+    if (!fontRes.ok) return null
+    return Buffer.from(await fontRes.arrayBuffer())
+  } catch {
+    return null
+  }
+}
+
+async function loadGoogleFontKit(family: string): Promise<FontKit | null> {
+  const [regularBuf, boldBuf] = await Promise.all([
+    fetchGoogleFont(family, 400),
+    fetchGoogleFont(family, 700),
+  ])
+  if (!regularBuf || !boldBuf) return null
+  return {
+    regular: await parseFont(regularBuf),
+    bold: await parseFont(boldBuf),
+  }
+}
+
+/**
+ * Resolve a FontKit for the given font family name.
+ * Resolution order: bundled → Google Fonts (if network available) → Inter fallback.
+ */
+export async function resolveFontKit(family: string): Promise<FontKit> {
+  const normalised = family.trim()
+  if (!normalised) return loadFontKit()
+
+  const cached = fontKitCache.get(normalised)
+  if (cached) return cached
+
+  let kit: FontKit | null = null
+
+  if (isBundledFont(normalised)) {
+    kit = await loadBundledFontKit(normalised)
+  } else {
+    kit = await loadGoogleFontKit(normalised)
+  }
+
+  if (!kit) {
+    // Fallback to Inter
+    kit = await loadFontKit()
+  }
+
+  fontKitCache.set(normalised, kit)
+  return kit
+}
+
+export function listBundledFonts(): BundledFontName[] {
+  return [...bundledFontNames]
 }
 
 function parseDataUrl(source: string) {

@@ -29,6 +29,8 @@ async function parseRequest(request: NextRequest) {
       background: String(formData.get("background") ?? "transparent"),
       logo,
       logoMimeType: file instanceof File ? file.type : undefined,
+      primaryFont: formData.get("primaryFont") ? String(formData.get("primaryFont")) : undefined,
+      secondaryFont: formData.get("secondaryFont") ? String(formData.get("secondaryFont")) : undefined,
     }
   }
 
@@ -42,6 +44,8 @@ async function parseRequest(request: NextRequest) {
     background: body.background,
     logo: body.logo,
     logoMimeType: body.logoMimeType,
+    primaryFont: body.primaryFont,
+    secondaryFont: body.secondaryFont,
   }
 }
 

@@ -8,7 +8,6 @@ services:
       # Optional: copy .env.example to .env.local and uncomment to use it.
       # - LOGOKIT_API_KEY=
       # - LOGOKIT_ALLOWED_ORIGINS=
-      # - LOGOKIT_RATE_LIMIT_PER_MINUTE=60
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]

@@ -1,15 +1,5 @@
+import { apiGenerateRequestSchema } from "@mordonezdev/logokit-core"
 import { z } from "zod"
-
-const requestSchema = z.object({
-  text: z.string().trim().min(1).max(96),
-  secondaryText: z.string().trim().max(96).optional(),
-  layout: z.enum(["horizontal", "vertical", "stacked"]).default("horizontal"),
-  variant: z.enum(["color", "mono-black", "mono-white"]).default("color"),
-  format: z.enum(["svg", "png"]).default("svg"),
-  background: z.string().regex(/^(transparent|#[0-9a-fA-F]{6})$/).default("transparent"),
-  logo: z.string().optional(),
-  logoMimeType: z.enum(["image/svg+xml", "image/png"]).optional(),
-})
 
 export function buildOpenApiDocument() {
   return {
@@ -28,7 +18,7 @@ export function buildOpenApiDocument() {
             required: true,
             content: {
               "application/json": {
-                schema: z.toJSONSchema(requestSchema),
+                schema: z.toJSONSchema(apiGenerateRequestSchema),
               },
             },
           },

@@ -33,6 +33,10 @@ export function hasApiAccess(request: NextRequest) {
     return true
   }
 
+  // Allow same-origin browser requests (the built-in web UI) without requiring a key.
+  // Note: the Origin header can be spoofed by non-browser clients, so this bypass
+  // is intentional only for local/trusted deployments. For public APIs, set
+  // LOGOKIT_API_KEY and require callers to send Authorization: Bearer <key>.
   const origin = request.headers.get("origin")
   return Boolean(origin && origin === request.nextUrl.origin)
 }

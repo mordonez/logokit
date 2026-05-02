@@ -7,6 +7,7 @@ interface WrappedLine {
   width: number
   fontSize: number
   weight: "regular" | "bold"
+  fieldType: "primary" | "secondary"
 }
 
 interface LayoutPreset {
@@ -151,13 +152,14 @@ export function createTextFrame(
   layout: LayoutName,
   text: string,
   secondaryText: string,
-  fonts: { regular: Font; bold: Font },
+  primaryFonts: { regular: Font; bold: Font },
+  secondaryFonts: { regular: Font; bold: Font } = primaryFonts,
 ) {
   const preset = layoutPresets[layout]
   const normalizedPrimary = text.trim()
   const normalizedSecondary = secondaryText.trim()
   const primaryWeight: "regular" | "bold" = normalizedSecondary ? "regular" : "bold"
-  const primaryFont = primaryWeight === "bold" ? fonts.bold : fonts.regular
+  const primaryFont = primaryWeight === "bold" ? primaryFonts.bold : primaryFonts.regular
 
   const primaryLines = normalizedPrimary
     .split(/\n+/)
@@ -168,17 +170,19 @@ export function createTextFrame(
       width: measure(primaryFont, line, preset.primarySize),
       fontSize: preset.primarySize,
       weight: primaryWeight,
+      fieldType: "primary" as const,
     }))
 
   const secondaryLines = normalizedSecondary
     .split(/\n+/)
-    .flatMap((segment) => wrapWords(segment.trim(), fonts.bold, preset.secondarySize, preset.textMaxWidth))
+    .flatMap((segment) => wrapWords(segment.trim(), secondaryFonts.bold, preset.secondarySize, preset.textMaxWidth))
     .filter(Boolean)
     .map((line) => ({
       text: line,
-      width: measure(fonts.bold, line, preset.secondarySize),
+      width: measure(secondaryFonts.bold, line, preset.secondarySize),
       fontSize: preset.secondarySize,
       weight: "bold" as const,
+      fieldType: "secondary" as const,
     }))
 
   const lines = [...primaryLines, ...secondaryLines]

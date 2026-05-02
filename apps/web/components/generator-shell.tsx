@@ -2,6 +2,9 @@
 
 import { startTransition, useEffect, useMemo, useRef, useState } from "react"
 
+const BUNDLED_FONTS = ["Inter", "Plus Jakarta Sans", "DM Sans", "Outfit", "Geist"] as const
+type BundledFont = (typeof BUNDLED_FONTS)[number]
+
 export interface LayoutCard {
   name: "horizontal" | "vertical" | "stacked"
   label: string
@@ -12,6 +15,7 @@ export interface LayoutCard {
 interface GeneratorShellProps {
   layouts: LayoutCard[]
   initialPreviewSvg: string
+  bundledFonts: readonly string[]
 }
 
 interface PreviewState {
@@ -58,18 +62,26 @@ async function readLogoFile(file: File) {
   }
 }
 
-export function GeneratorShell({ layouts, initialPreviewSvg }: GeneratorShellProps) {
+export function GeneratorShell({ layouts, initialPreviewSvg, bundledFonts }: GeneratorShellProps) {
   const [text, setText] = useState("Acme Labs")
   const [secondaryText, setSecondaryText] = useState("Research Studio")
   const [layout, setLayout] = useState<LayoutCard["name"]>("horizontal")
   const [variant, setVariant] = useState<"color" | "mono-black" | "mono-white">("color")
   const [backgroundMode, setBackgroundMode] = useState<"transparent" | "solid">("transparent")
   const [background, setBackground] = useState("#10213A")
+  const [primaryFont, setPrimaryFont] = useState<string>("Inter")
+  const [secondaryFont, setSecondaryFont] = useState<string>("Inter")
+  const [customPrimaryFont, setCustomPrimaryFont] = useState("")
+  const [customSecondaryFont, setCustomSecondaryFont] = useState("")
+  // committedXFont is what's actually sent to the API — only updates on blur/Enter
+  const [committedPrimaryFont, setCommittedPrimaryFont] = useState("Inter")
+  const [committedSecondaryFont, setCommittedSecondaryFont] = useState("Inter")
   const [preview, setPreview] = useState<PreviewState | null>({
     url: svgToDataUrl(initialPreviewSvg),
   })
   const [pending, setPending] = useState(false)
   const [downloadStatus, setDownloadStatus] = useState("")
+  const [downloading, setDownloading] = useState(false)
   const [error, setError] = useState("")
   const [logoPayload, setLogoPayload] = useState<{ data: string; mimeType: string; name: string } | null>(null)
   const [dragActive, setDragActive] = useState(false)
@@ -83,9 +95,21 @@ export function GeneratorShell({ layouts, initialPreviewSvg }: GeneratorShellPro
       background: backgroundMode === "solid" ? background : "transparent",
       logo: logoPayload?.data,
       logoMimeType: logoPayload?.mimeType,
+      primaryFont: committedPrimaryFont,
+      secondaryFont: committedSecondaryFont,
     }),
-    [background, backgroundMode, layout, logoPayload, secondaryText, text, variant],
+    [background, backgroundMode, committedPrimaryFont, committedSecondaryFont, layout, logoPayload, secondaryText, text, variant],
   )
+
+  function commitPrimaryFont() {
+    const resolved = customPrimaryFont.trim() || primaryFont
+    if (resolved !== "__custom__") setCommittedPrimaryFont(resolved)
+  }
+
+  function commitSecondaryFont() {
+    const resolved = customSecondaryFont.trim() || secondaryFont
+    if (resolved !== "__custom__") setCommittedSecondaryFont(resolved)
+  }
 
   useEffect(() => {
     abortRef.current?.abort()
@@ -152,6 +176,8 @@ export function GeneratorShell({ layouts, initialPreviewSvg }: GeneratorShellPro
   }
 
   async function handleDownload(format: "svg" | "png") {
+    if (downloading) return
+    setDownloading(true)
     try {
       setDownloadStatus(`Preparing ${format.toUpperCase()}…`)
       const response = await fetch("/api/generate", {
@@ -178,6 +204,8 @@ export function GeneratorShell({ layouts, initialPreviewSvg }: GeneratorShellPro
     } catch (downloadError) {
       setDownloadStatus("")
       setError(downloadError instanceof Error ? downloadError.message : "Download failed.")
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -214,8 +242,8 @@ export function GeneratorShell({ layouts, initialPreviewSvg }: GeneratorShellPro
               {downloadStatus || "SVG keeps vectors. PNG renders at 2×."}
             </span>
             <div className="download-actions">
-              <button className="button-secondary" onClick={() => handleDownload("png")}>PNG</button>
-              <button className="button" onClick={() => handleDownload("svg")}>Download SVG</button>
+              <button className="button-secondary" onClick={() => handleDownload("png")} disabled={downloading}>PNG</button>
+              <button className="button" onClick={() => handleDownload("svg")} disabled={downloading}>Download SVG</button>
             </div>
           </div>
         </section>
@@ -312,6 +340,72 @@ export function GeneratorShell({ layouts, initialPreviewSvg }: GeneratorShellPro
           </section>
 
           <section className="form-section">
+            <h2>Fonts</h2>
+            <div className="field">
+              <label htmlFor="primary-font">Primary font</label>
+              <select
+                id="primary-font"
+                className="select-input"
+                value={primaryFont}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setPrimaryFont(val)
+                  setCustomPrimaryFont("")
+                  if (val !== "__custom__") setCommittedPrimaryFont(val)
+                }}
+              >
+                {bundledFonts.map((f) => <option key={f} value={f}>{f}</option>)}
+                <option value="__custom__">Custom (Google Fonts)…</option>
+              </select>
+              {primaryFont === "__custom__" && (
+                <>
+                  <input
+                    className="text-input"
+                    style={{ marginTop: 4 }}
+                    placeholder="e.g. Raleway — press Enter to apply"
+                    value={customPrimaryFont}
+                    onChange={(e) => setCustomPrimaryFont(e.target.value)}
+                    onBlur={commitPrimaryFont}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commitPrimaryFont() } }}
+                  />
+                  <a className="helper" href="https://fonts.google.com" target="_blank" rel="noreferrer" style={{ marginTop: 2 }}>Browse Google Fonts ↗</a>
+                </>
+              )}
+            </div>
+            <div className="field">
+              <label htmlFor="secondary-font">Secondary font</label>
+              <select
+                id="secondary-font"
+                className="select-input"
+                value={secondaryFont}
+                onChange={(e) => {
+                  const val = e.target.value
+                  setSecondaryFont(val)
+                  setCustomSecondaryFont("")
+                  if (val !== "__custom__") setCommittedSecondaryFont(val)
+                }}
+              >
+                {bundledFonts.map((f) => <option key={f} value={f}>{f}</option>)}
+                <option value="__custom__">Custom (Google Fonts)…</option>
+              </select>
+              {secondaryFont === "__custom__" && (
+                <>
+                  <input
+                    className="text-input"
+                    style={{ marginTop: 4 }}
+                    placeholder="e.g. Raleway — press Enter to apply"
+                    value={customSecondaryFont}
+                    onChange={(e) => setCustomSecondaryFont(e.target.value)}
+                    onBlur={commitSecondaryFont}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); commitSecondaryFont() } }}
+                  />
+                  <a className="helper" href="https://fonts.google.com" target="_blank" rel="noreferrer" style={{ marginTop: 2 }}>Browse Google Fonts ↗</a>
+                </>
+              )}
+            </div>
+          </section>
+
+          <section className="form-section">
             <h2>Appearance</h2>
             <div className="field">
               <span className="group-label">Variant</span>
@@ -375,6 +469,7 @@ export function GeneratorShell({ layouts, initialPreviewSvg }: GeneratorShellPro
 
       <footer className="footnote">
         <span>Same engine via <code className="inline">POST /api/generate</code> and <code className="inline">npx @mordonezdev/logokit</code>.</span>
+        <span>Built by <a href="https://github.com/mordonez/" target="_blank" rel="noreferrer">Miguel Ordóñez</a>.</span>
       </footer>
     </main>
   )

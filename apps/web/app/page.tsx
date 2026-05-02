@@ -1,9 +1,10 @@
-import { listLayouts, renderSvg } from "@mordonezdev/logokit-core"
+import { listBundledFonts, listLayouts, renderSvg } from "@mordonezdev/logokit-core"
 
 import { GeneratorShell } from "../components/generator-shell"
 
 export default async function HomePage() {
   const layouts = listLayouts()
+  const bundledFonts = listBundledFonts()
   const initialPreview = await renderSvg({
     text: "Acme Labs",
     secondaryText: "Research Studio",
@@ -11,5 +12,5 @@ export default async function HomePage() {
     format: "svg",
   })
 
-  return <GeneratorShell layouts={layouts} initialPreviewSvg={initialPreview.svg} />
+  return <GeneratorShell layouts={layouts} initialPreviewSvg={initialPreview.svg} bundledFonts={bundledFonts} />
 }

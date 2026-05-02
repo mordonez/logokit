@@ -12,7 +12,6 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
-    "@asteasolutions/zod-to-openapi": "^8.1.0",
     "@mordonezdev/logokit-core": "workspace:*",
     "next": "^16.2.4",
     "react": "^19.2.5",
