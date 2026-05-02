@@ -1,6 +1,6 @@
 {
   "name": "@mordonezdev/logokit-core",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Brand-agnostic logo lockup rendering, sanitization, and export pipeline shared by the logokit web app, HTTP API, and CLI.",
   "license": "MIT",
   "author": "mordonez",
