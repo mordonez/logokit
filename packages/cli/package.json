@@ -1,6 +1,6 @@
 {
   "name": "@mordonezdev/logokit",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CLI for logokit: generate brand lockups (SVG or PNG) from any logo.",
   "license": "MIT",
   "author": "mordonez",
@@ -28,7 +28,10 @@
   "exports": {
     ".": "./dist/index.js"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "engines": {
     "node": ">=20.0.0"
   },
