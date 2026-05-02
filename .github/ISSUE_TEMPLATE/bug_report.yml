@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a problem with logokit (web, API, or CLI).
+labels: ["bug"]
+body:
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Web app
+        - HTTP API
+        - CLI
+        - Core package
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, what did you see?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Minimal steps, request body, or CLI invocation.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: e.g. @mordonezdev/logokit@1.0.0 or commit SHA
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: Node 22.5.0, macOS 14.5

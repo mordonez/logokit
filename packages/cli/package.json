@@ -1,0 +1,50 @@
+{
+  "name": "@mordonezdev/logokit",
+  "version": "1.0.0",
+  "description": "CLI for logokit: generate brand lockups (SVG or PNG) from any logo.",
+  "license": "MIT",
+  "author": "mordonez",
+  "homepage": "https://github.com/mordonez/logokit#readme",
+  "bugs": {
+    "url": "https://github.com/mordonez/logokit/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mordonez/logokit.git",
+    "directory": "packages/cli"
+  },
+  "keywords": [
+    "logo",
+    "lockup",
+    "branding",
+    "svg",
+    "png",
+    "cli"
+  ],
+  "type": "module",
+  "bin": {
+    "logokit": "dist/index.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": ["dist", "README.md"],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "pnpm --filter @mordonezdev/logokit-core build && tsup src/index.ts --format esm --target node20 --clean --external @mordonezdev/logokit-core --external commander",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "pnpm build && vitest run"
+  },
+  "dependencies": {
+    "@mordonezdev/logokit-core": "workspace:^",
+    "commander": "^14.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
+  }
+}

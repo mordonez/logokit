@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      # Optional: copy .env.example to .env.local and uncomment to use it.
+      # - LOGOKIT_API_KEY=
+      # - LOGOKIT_ALLOWED_ORIGINS=
+      # - LOGOKIT_RATE_LIMIT_PER_MINUTE=60
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
