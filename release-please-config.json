@@ -3,8 +3,9 @@
   "include-component-in-tag": true,
   "include-v-in-tag": false,
   "tag-separator": "@",
+  "pull-request-title-pattern": "chore: release",
   "separate-pull-requests": false,
-  "group-pull-request-title-pattern": "chore: release ${version}",
+  "group-pull-request-title-pattern": "chore: release",
   "plugins": ["node-workspace"],
   "packages": {
     "packages/core": {
