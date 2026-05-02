@@ -2,6 +2,12 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_current:
+        description: Publish the package versions currently committed on main
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main]
 
@@ -27,27 +33,27 @@ jobs:
           manifest-file: .release-please-manifest.json
 
       - uses: actions/checkout@v6
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.releases_created == 'true' || inputs.publish_current }}
         with:
           fetch-depth: 0
 
       - uses: pnpm/action-setup@v6
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.releases_created == 'true' || inputs.publish_current }}
 
       - uses: actions/setup-node@v6
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.releases_created == 'true' || inputs.publish_current }}
         with:
           node-version: 22
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
       - run: pnpm install --frozen-lockfile
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.releases_created == 'true' || inputs.publish_current }}
 
       - run: pnpm release:check
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.releases_created == 'true' || inputs.publish_current }}
 
       - run: pnpm release:publish
-        if: ${{ steps.release.outputs.release_created }}
+        if: ${{ steps.release.outputs.releases_created == 'true' || inputs.publish_current }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
