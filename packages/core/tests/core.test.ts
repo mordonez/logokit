@@ -1,3 +1,7 @@
+import { mkdtemp, rm } from "node:fs/promises"
+import os from "node:os"
+import path from "node:path"
+
 import { describe, expect, it } from "vitest"
 
 import { generate, listLayouts, sanitizeSvg } from "../src"
@@ -36,6 +40,27 @@ describe("generate", () => {
 
     expect(result.mimeType).toBe("image/png")
     expect(result.buffer.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a")
+  })
+
+  it("loads bundled assets independently of cwd", async () => {
+    const originalCwd = process.cwd()
+    const tempDir = await mkdtemp(path.join(os.tmpdir(), "logokit-cwd-"))
+
+    try {
+      process.chdir(tempDir)
+
+      const result = await generate({
+        text: "Acme Labs",
+        layout: "vertical",
+        format: "png",
+      })
+
+      expect(result.mimeType).toBe("image/png")
+      expect(result.buffer.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a")
+    } finally {
+      process.chdir(originalCwd)
+      await rm(tempDir, { recursive: true, force: true })
+    }
   })
 
   it("matches golden snapshots", async () => {

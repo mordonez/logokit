@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs"
 import { readFile } from "node:fs/promises"
 import path from "node:path"
+import { fileURLToPath } from "node:url"
 
 import { imageSize } from "image-size"
 
@@ -24,6 +25,14 @@ export interface NormalizedLogo {
 
 function resolveAssetsRoot() {
   const candidates: string[] = []
+
+  const moduleUrl = typeof import.meta !== "undefined" ? import.meta.url : undefined
+  if (moduleUrl?.startsWith("file:")) {
+    const moduleDir = path.dirname(fileURLToPath(moduleUrl))
+    candidates.push(path.join(moduleDir, "..", "assets"))
+    candidates.push(path.join(moduleDir, "assets"))
+  }
+
   let currentDir = process.cwd()
 
   while (true) {
