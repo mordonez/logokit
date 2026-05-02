@@ -5,7 +5,7 @@
     "incremental": true,
     "paths": {
       "@/*": ["./*"],
-      "@mordonezdev/logokit-core": ["../../../packages/core/src/index.ts"]
+      "@mordonezdev/logokit-core": ["packages/core/src/index.ts"]
     }
   },
   "include": [
