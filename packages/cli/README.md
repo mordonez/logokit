@@ -2,6 +2,8 @@
 
 CLI for [logokit](https://github.com/mordonez/logokit): generate brand lockups (SVG or PNG) from any logo.
 
+This is the only npm package published for the project.
+
 ## Run without installing
 
 ```bash

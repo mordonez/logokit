@@ -1,12 +1,10 @@
 # @mordonezdev/logokit-core
 
-Shared rendering core for [logokit](https://github.com/mordonez/logokit): brand-agnostic logo lockup generation, SVG sanitization, and SVG/PNG export. Used by the logokit web app, HTTP API, and CLI.
+Internal workspace package for [logokit](https://github.com/mordonez/logokit): brand-agnostic logo lockup generation, SVG sanitization, and SVG/PNG export. It is used by the web app, HTTP API, and CLI, but it is not published separately to npm.
 
-## Install
+## Workspace usage
 
-```bash
-npm install @mordonezdev/logokit-core
-```
+Import it from the workspace packages inside this monorepo rather than from npm.
 
 ## Usage
 
@@ -26,7 +24,7 @@ const result = await generate({
 // result.buffer (Uint8Array), result.mimeType, result.filename
 ```
 
-See the [main repository](https://github.com/mordonez/logokit) for full documentation.
+The only public npm package is `@mordonezdev/logokit`.
 
 ## License
 

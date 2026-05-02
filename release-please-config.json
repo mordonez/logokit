@@ -4,13 +4,14 @@
   "include-v-in-tag": false,
   "tag-separator": "@",
   "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
-  "separate-pull-requests": true,
+  "separate-pull-requests": false,
   "plugins": ["node-workspace"],
   "packages": {
     "packages/core": {
       "component": "@mordonezdev/logokit-core",
       "package-name": "@mordonezdev/logokit-core",
-      "release-type": "node"
+      "release-type": "node",
+      "skip-github-release": true
     },
     "packages/cli": {
       "component": "@mordonezdev/logokit",

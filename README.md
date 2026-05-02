@@ -14,8 +14,10 @@ The web app runs on `http://localhost:8080`. Requires Node.js 20+ and pnpm 10+.
 ## What ships in this repo
 
 - `apps/web`: public one-page editor and the `/api/generate` HTTP surface.
-- `packages/core`: shared rendering, layout, sanitization, and export pipeline.
+- `packages/core`: internal shared rendering, layout, sanitization, and export pipeline.
 - `packages/cli`: `logokit` command for local and CI workflows.
+
+Only `@mordonezdev/logokit` is published to npm. The core package stays internal to this workspace.
 
 ## Core features
 

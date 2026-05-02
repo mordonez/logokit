@@ -1,5 +1,6 @@
 {
   "name": "@mordonezdev/logokit-core",
+  "private": true,
   "version": "1.0.1",
   "description": "Brand-agnostic logo lockup rendering, sanitization, and export pipeline shared by the logokit web app, HTTP API, and CLI.",
   "license": "MIT",
@@ -38,9 +39,6 @@
   ],
   "engines": {
     "node": ">=20.0.0"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "scripts": {
     "build": "tsup src/index.ts --format esm --dts --clean --external @fontsource/inter --external @resvg/resvg-js --external dompurify --external image-size --external jsdom --external opentype.js --external zod",

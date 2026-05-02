@@ -17,3 +17,4 @@ outputs
 .env.local
 .env.production
 .claude/settings.local.json
+packages/cli/assets
