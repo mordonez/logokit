@@ -16,7 +16,7 @@
     "test:e2e": "pnpm --filter @mordonezdev/logokit-web test:e2e",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "release:check": "pnpm check",
-    "release:publish": "pnpm build && pnpm changeset publish"
+    "release:publish": "pnpm build && pnpm --filter './packages/*' publish -r --access public --no-git-checks"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,6 @@
   },
   "homepage": "https://github.com/mordonez/logokit#readme",
   "devDependencies": {
-    "@changesets/cli": "^2.29.7",
     "@playwright/test": "^1.55.0",
     "@types/node": "^25.6.0",
     "start-server-and-test": "^2.1.2",

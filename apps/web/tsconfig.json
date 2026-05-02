@@ -2,9 +2,10 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "plugins": [{ "name": "next" }],
+    "baseUrl": "../..",
     "incremental": true,
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["apps/web/*"],
       "@mordonezdev/logokit-core": ["packages/core/src/index.ts"]
     }
   },
