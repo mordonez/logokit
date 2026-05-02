@@ -22,7 +22,7 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   output: "standalone",
   allowedDevOrigins: ["127.0.0.1", "localhost"],
-  serverExternalPackages: ["@resvg/resvg-js", "dompurify", "image-size", "jsdom", "opentype.js"],
+  serverExternalPackages: ["@resvg/resvg-js", "dompurify", "image-size", "opentype.js"],
   async headers() {
     return [
       {
