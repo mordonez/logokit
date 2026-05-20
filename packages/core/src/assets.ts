@@ -20,6 +20,7 @@ export interface NormalizedLogo {
   height: number
   viewBox: [number, number, number, number]
   innerMarkup?: string
+  rootAttributes?: string
   dataUrl?: string
   warnings: string[]
 }
@@ -261,6 +262,24 @@ function inferMimeType(value: string | Uint8Array | Buffer, provided?: string) {
   throw new Error("Unable to infer uploaded logo type.")
 }
 
+const inheritedPresentationAttributes = new Set([
+  "clip-rule",
+  "color",
+  "fill",
+  "fill-opacity",
+  "fill-rule",
+  "opacity",
+  "stroke",
+  "stroke-dasharray",
+  "stroke-dashoffset",
+  "stroke-linecap",
+  "stroke-linejoin",
+  "stroke-miterlimit",
+  "stroke-opacity",
+  "stroke-width",
+  "vector-effect",
+])
+
 function extractSvgPieces(svg: string, fallbackWidth: number, fallbackHeight: number) {
   const openTag = svg.match(/<svg\b([^>]*)>/i)
   if (!openTag) {
@@ -268,6 +287,14 @@ function extractSvgPieces(svg: string, fallbackWidth: number, fallbackHeight: nu
   }
 
   const innerMarkup = svg.replace(/^.*?<svg\b[^>]*>/is, "").replace(/<\/svg>\s*$/i, "")
+  const rootAttributes = [...openTag[1].matchAll(/([:\w-]+)\s*=\s*("([^"]*)"|'([^']*)')/g)]
+    .map((match) => ({
+      name: match[1].toLowerCase(),
+      value: match[3] ?? match[4] ?? "",
+    }))
+    .filter((attribute) => inheritedPresentationAttributes.has(attribute.name))
+    .map((attribute) => `${attribute.name}="${attribute.value}"`)
+    .join(" ")
   const viewBoxMatch = openTag[1].match(/viewBox=["']([^"']+)["']/i)
   const viewBox = viewBoxMatch
     ? viewBoxMatch[1].split(/\s+/).map(Number)
@@ -276,12 +303,14 @@ function extractSvgPieces(svg: string, fallbackWidth: number, fallbackHeight: nu
   if (viewBox.length !== 4 || viewBox.some((value) => !Number.isFinite(value))) {
     return {
       innerMarkup,
+      rootAttributes,
       viewBox: [0, 0, fallbackWidth, fallbackHeight] as [number, number, number, number],
     }
   }
 
   return {
     innerMarkup,
+    rootAttributes,
     viewBox: viewBox as [number, number, number, number],
   }
 }
@@ -311,6 +340,7 @@ export async function normalizeLogo(input?: string | Uint8Array | Buffer, mimeTy
       height,
       viewBox: pieces.viewBox,
       innerMarkup: pieces.innerMarkup,
+      rootAttributes: pieces.rootAttributes,
       warnings: sanitized.warnings,
     }
   }

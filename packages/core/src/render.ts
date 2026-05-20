@@ -53,7 +53,8 @@ function logoMarkup(logo: Awaited<ReturnType<typeof normalizeLogo>>, variant: Va
   const filter = variant === "color" ? "" : " filter=\"url(#mono-logo)\""
 
   if (logo.kind === "svg") {
-    return `<g${filter} transform="translate(${frame.logo.x} ${frame.logo.y}) scale(${scaleX} ${scaleY}) translate(${-minX} ${-minY})">${logo.innerMarkup}</g>`
+    const rootAttributes = logo.rootAttributes ? ` ${logo.rootAttributes}` : ""
+    return `<g${filter}${rootAttributes} transform="translate(${frame.logo.x} ${frame.logo.y}) scale(${scaleX} ${scaleY}) translate(${-minX} ${-minY})">${logo.innerMarkup}</g>`
   }
 
   return `<image x="${frame.logo.x}" y="${frame.logo.y}" width="${frame.logo.width}" height="${frame.logo.height}" href="${logo.dataUrl}" preserveAspectRatio="xMidYMid meet"${filter}/>`
@@ -98,7 +99,7 @@ export async function renderSvg(input: GenerateInput) {
   }).join("")
 
   const svg = [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${frame.width}" height="${frame.height}" viewBox="0 0 ${frame.width} ${frame.height}" fill="none" role="img" aria-label="${escapeAttr(options.text)}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${frame.width}" height="${frame.height}" viewBox="0 0 ${frame.width} ${frame.height}" role="img" aria-label="${escapeAttr(options.text)}">`,
     defs,
     backgroundRect,
     logoMarkup(logo, options.variant, frame),
