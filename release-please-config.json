@@ -3,9 +3,19 @@
   "include-component-in-tag": true,
   "include-v-in-tag": false,
   "tag-separator": "@",
+  "bootstrap-sha": "9647124f1c71f84d3248700177122a6c9c8a9047",
   "pull-request-title-pattern": "chore${scope}: release${component} ${version}",
   "separate-pull-requests": false,
+  "plugins": [
+    "node-workspace"
+  ],
   "packages": {
+    "packages/core": {
+      "component": "@mordonezdev/logokit-core",
+      "package-name": "@mordonezdev/logokit-core",
+      "release-type": "node",
+      "skip-github-release": true
+    },
     "packages/cli": {
       "component": "@mordonezdev/logokit",
       "package-name": "@mordonezdev/logokit",
