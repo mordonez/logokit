@@ -15,6 +15,8 @@ export function sanitizeSvg(svg: string): SanitizedSvg {
 
   const sanitized = purifier.sanitize(trimmed, {
     USE_PROFILES: { svg: true, svgFilters: true, html: false },
+    ADD_TAGS: ["use"],
+    ADD_ATTR: ["href", "xlink:href"],
     FORBID_TAGS: forbiddenTags,
     FORBID_ATTR: ["onload", "onclick", "onerror", "onmouseover", "style"],
   })
@@ -42,6 +44,9 @@ export function sanitizeSvg(svg: string): SanitizedSvg {
         if (!allowed) {
           element.removeAttribute(attribute.name)
           warnings.add("Removed external references from uploaded SVG.")
+        } else if (name === "xlink:href") {
+          element.setAttribute("href", value)
+          element.removeAttribute(attribute.name)
         }
       }
     }

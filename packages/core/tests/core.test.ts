@@ -13,6 +13,21 @@ describe("sanitizeSvg", () => {
     const result = sanitizeSvg(`<svg xmlns=\"http://www.w3.org/2000/svg\"><script>alert(1)</script><rect width=\"40\" height=\"40\"/></svg>`)
     expect(result.svg).not.toContain("<script")
   })
+
+  it("preserves local symbol references and removes external references", () => {
+    const result = sanitizeSvg(`
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 20 20">
+        <defs><path id="mark" d="M0 0h10v10H0z" fill="#ffb13b"/></defs>
+        <use xlink:href="#mark"/>
+        <use href="https://example.com/remote.svg#mark"/>
+      </svg>
+    `)
+
+    expect(result.svg).toContain("<use")
+    expect(result.svg).toContain("href=\"#mark\"")
+    expect(result.svg).not.toContain("xlink:href")
+    expect(result.svg).not.toContain("https://example.com")
+  })
 })
 
 describe("generate", () => {
@@ -40,6 +55,27 @@ describe("generate", () => {
 
     expect(result.mimeType).toBe("image/png")
     expect(result.buffer.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a")
+  })
+
+  it("keeps SVG logos that compose artwork with local use references", async () => {
+    const logo = `
+      <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 20 20">
+        <defs><path id="bar" d="M2 8h16v4H2z" fill="#ffb13b"/></defs>
+        <use xlink:href="#bar"/>
+        <use xlink:href="#bar" transform="rotate(90 10 10)"/>
+      </svg>
+    `
+    const result = await generate({
+      logo,
+      text: "Acme Labs",
+      layout: "vertical",
+      format: "svg",
+    })
+
+    expect(result.svg).toContain("<use")
+    expect(result.svg).toContain("href=\"#bar\"")
+    expect(result.svg).not.toContain("xlink:href")
+    expect(result.svg).toContain("fill=\"#ffb13b\"")
   })
 
   it("loads bundled assets independently of cwd", async () => {
