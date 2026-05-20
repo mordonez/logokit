@@ -78,6 +78,31 @@ describe("generate", () => {
     expect(result.svg).toContain("fill=\"#ffb13b\"")
   })
 
+  it("does not hide SVG logo paths that rely on the default fill", async () => {
+    const logo = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><path d="M0 0h10v10H0z"/></svg>`
+    const result = await generate({
+      logo,
+      text: "Acme Labs",
+      layout: "horizontal",
+      format: "svg",
+    })
+
+    expect(result.svg).toMatch(/^<svg\b(?![^>]*\sfill=)/)
+    expect(result.svg).toContain(`<path d="M0 0h10v10H0z"></path>`)
+  })
+
+  it("preserves inherited presentation attributes from the SVG logo root", async () => {
+    const logo = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" fill="#ef4444"><path d="M0 0h10v10H0z"/></svg>`
+    const result = await generate({
+      logo,
+      text: "Acme Labs",
+      layout: "horizontal",
+      format: "svg",
+    })
+
+    expect(result.svg).toContain(`<g fill="#ef4444" transform=`)
+  })
+
   it("loads bundled assets independently of cwd", async () => {
     const originalCwd = process.cwd()
     const tempDir = await mkdtemp(path.join(os.tmpdir(), "logokit-cwd-"))
