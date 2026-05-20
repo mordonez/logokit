@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/mordonez/logokit/compare/@mordonezdev/logokit-core@1.2.1...@mordonezdev/logokit-core@1.2.2) (2026-05-20)
+
+
+### Bug Fixes
+
+* preserve svg logo fill inheritance ([#19](https://github.com/mordonez/logokit/issues/19)) ([d6c8ae7](https://github.com/mordonez/logokit/commit/d6c8ae778010855d2ed823c7fe93b37b49fe34ce))
+
 ## [1.2.1](https://github.com/mordonez/logokit/compare/@mordonezdev/logokit-core@1.2.0...@mordonezdev/logokit-core@1.2.1) (2026-05-20)
 
 
