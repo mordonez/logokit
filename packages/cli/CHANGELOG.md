@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.1.2](https://github.com/mordonez/logokit/compare/@mordonezdev/logokit@1.1.1...@mordonezdev/logokit@1.1.2) (2026-05-20)
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @mordonezdev/logokit-core bumped to 1.2.1
+
 ## [1.1.1](https://github.com/mordonez/logokit/compare/@mordonezdev/logokit@1.1.0...@mordonezdev/logokit@1.1.1) (2026-05-02)
 
 
