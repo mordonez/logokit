@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 WORKDIR /app
 RUN npm install -g pnpm@10.33.2
 
@@ -18,7 +18,7 @@ COPY --from=deps /app/packages ./packages
 COPY . .
 RUN pnpm --filter @mordonezdev/logokit-web build
 
-FROM node:22-alpine AS runner
+FROM node:24-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=8080
