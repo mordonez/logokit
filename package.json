@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Generate brand lockups from any logo via web, API, or CLI.",
-  "packageManager": "pnpm@10.33.2",
+  "packageManager": "pnpm@10.34.5",
   "engines": {
     "node": ">=20.0.0"
   },
